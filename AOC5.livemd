@@ -1,0 +1,82 @@
+# Untitled notebook
+
+## Input
+
+```elixir
+sample_input = """
+    [D]    
+[N] [C]    
+[Z] [M] [P]
+ 1   2   3 
+
+move 1 from 2 to 1
+move 3 from 1 to 3
+move 2 from 2 to 1
+move 1 from 1 to 2
+"""
+
+{:ok, input1} = File.read(__DIR__ <> "/day5.txt")
+
+:ok
+```
+
+## Code
+
+```elixir
+defmodule Day5 do
+  def run(input, rev) do
+    [headerstr, instr] = String.split(String.trim(input, "\n"), "\n\n")
+
+    parse_header(headerstr)
+    |> run_instr(instr, rev)
+    |> score
+  end
+
+  defp parse_header(input) do
+    input
+    |> String.split("\n")
+    |> Enum.filter(&(!String.match?(&1, ~r/^[\d ]+$/)))
+    |> Enum.reduce(%{}, fn line, acc ->
+      Regex.scan(~r/\[(.)\]/, line, return: :index)
+      |> Enum.reduce(acc, fn [_, {pos, off}], acc ->
+        char = String.slice(line, pos, off)
+        slot = "#{1 + div(pos - 1, 4)}"
+        Map.update(acc, slot, [char], &(&1 ++ [char]))
+      end)
+    end)
+  end
+
+  defp run_instr(header, instr, rev) do
+    instr
+    |> String.split("\n")
+    |> Enum.reduce(header, fn line, header ->
+      [_, amount, from, to] = Regex.run(~r"^move (\d+) from (\d+) to (\d+)$", line)
+      {to_move, to_leave} = Enum.split(Map.get(header, from), String.to_integer(amount))
+
+      rev_move =
+        if rev do
+          Enum.reverse(to_move)
+        else
+          to_move
+        end
+
+      Map.update!(header, to, &(rev_move ++ &1))
+      |> Map.put(from, to_leave)
+    end)
+  end
+
+  defp score(header) do
+    keys = Map.keys(header) |> Enum.map(&String.to_integer(&1)) |> Enum.sort()
+
+    for key <- keys do
+      Map.get(header, "#{key}") |> Enum.take(1)
+    end
+    |> Enum.join()
+  end
+end
+
+IO.inspect(Day5.run(sample_input, true))
+IO.inspect(Day5.run(input1, true))
+IO.inspect(Day5.run(input1, false))
+:ok
+```
