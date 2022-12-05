@@ -1,0 +1,53 @@
+# AOC 1
+
+## Inputs
+
+<!-- livebook:{"disable_formatting":true} -->
+
+```elixir
+sample_input = """
+1000
+2000
+3000
+
+4000
+
+5000
+6000
+
+7000
+8000
+9000
+
+10000
+"""
+
+input1 = File.read!(__DIR__<>"/day1.txt")
+
+:ok
+```
+
+## Code
+
+```elixir
+defmodule Day1 do
+  def run(input, take) do
+    input
+    |> String.trim()
+    |> String.split("\n\n")
+    |> Enum.map(fn str ->
+      String.split(str, "\n")
+      |> Enum.map(&String.to_integer(&1))
+      |> Enum.reduce(0, &(&1 + &2))
+    end)
+    |> Enum.sort(&(&1 > &2))
+    |> Enum.take(take)
+    |> Enum.sum()
+  end
+end
+
+IO.inspect(Day1.run(sample_input, 1))
+IO.inspect(Day1.run(input1, 1))
+IO.inspect(Day1.run(input1, 3))
+:ok
+```

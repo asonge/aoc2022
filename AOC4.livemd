@@ -1,0 +1,63 @@
+# Untitled notebook
+
+## Inputs
+
+```elixir
+sample_input = """
+2-4,6-8
+2-3,4-5
+5-7,7-9
+2-8,3-7
+6-6,4-6
+2-6,4-8
+"""
+
+{:ok, input1} = File.read(__DIR__ <> "/day4.txt")
+
+:ok
+```
+
+## Code
+
+```elixir
+defmodule Day4 do
+  def run(input, mode) do
+    input
+    |> String.trim()
+    |> String.split("\n")
+    |> Enum.map(fn line ->
+      [_ | rest] = Regex.run(~r"^(\d+)-(\d+),(\d+)-(\d+)$", line)
+      [e1start, e1end, e2start, e2end] = Enum.map(rest, &String.to_integer(&1))
+
+      case mode do
+        :subset ->
+          cond do
+            e1start <= e2start and e2end <= e1end -> 1
+            e2start <= e1start and e1end <= e2end -> 1
+            true -> 0
+          end
+
+        :overlap ->
+          e1 = Range.new(e1start, e1end)
+          e2 = Range.new(e2start, e2end)
+
+          case Range.disjoint?(e1, e2) do
+            true -> 0
+            false -> 1
+          end
+
+          # IO.inspect({e1,e2,!Range.disjoint?(e1,e2)})
+          # 0
+      end
+    end)
+    |> Enum.sum()
+  end
+end
+
+IO.inspect(Day4.run(sample_input, :subset))
+IO.inspect(Day4.run(input1, :subset))
+IO.inspect(Day4.run(sample_input, :overlap))
+IO.inspect(Day4.run(input1, :overlap))
+
+:ok
+```

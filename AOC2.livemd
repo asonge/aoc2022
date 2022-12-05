@@ -1,0 +1,68 @@
+# AOC Day 2
+
+## Inputs
+
+```elixir
+sample_input = """
+A Y
+B X
+C Z
+"""
+
+input1 = File.read!(__DIR__ <> "/day2.txt")
+
+:ok
+```
+
+## Code
+
+```elixir
+defmodule Day2 do
+  def run(input) do
+    input
+    |> String.trim()
+    |> String.split("\n")
+    |> Enum.map(&score(&1))
+    |> Enum.sum()
+  end
+
+  def run2(input) do
+    input
+    |> String.trim()
+    |> String.split("\n")
+    |> Enum.map(fn <<them::binary-size(1), " ", win::binary-size(1)>> ->
+      us =
+        case {them, win} do
+          {"A", "X"} -> "Z"
+          {"B", "X"} -> "X"
+          {"C", "X"} -> "Y"
+          {"A", "Y"} -> "X"
+          {"B", "Y"} -> "Y"
+          {"C", "Y"} -> "Z"
+          {"A", "Z"} -> "Y"
+          {"B", "Z"} -> "Z"
+          {"C", "Z"} -> "X"
+        end
+
+      score(them <> " " <> us)
+    end)
+    |> Enum.sum()
+  end
+
+  defp score("A X"), do: 3 + score("  X")
+  defp score("B Y"), do: 3 + score("  Y")
+  defp score("C Z"), do: 3 + score("  Z")
+  defp score("A Y"), do: 6 + 2
+  defp score("B Z"), do: 6 + 3
+  defp score("C X"), do: 6 + 1
+  defp score(<<_::binary-size(2), "X">>), do: 1
+  defp score(<<_::binary-size(2), "Y">>), do: 2
+  defp score(<<_::binary-size(2), "Z">>), do: 3
+end
+
+IO.inspect(Day2.run(sample_input))
+IO.inspect(Day2.run(input1))
+IO.inspect(Day2.run2(sample_input))
+IO.inspect(Day2.run2(input1))
+:ok
+```

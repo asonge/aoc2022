@@ -1,0 +1,66 @@
+# AOC 2022 Day 3
+
+## Inputs
+
+```elixir
+sample_input = """
+vJrwpWtwJgWrhcsFMMfFFhFp
+jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
+PmmdzqPrVvPwwTWBwg
+wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
+ttgJtRGJQctTZtZT
+CrZsJsPPZsGzwwsLwLmpwMDw
+"""
+
+{:ok, input1} = File.read(__DIR__ <> "/day3.txt")
+
+:ok
+```
+
+## Code
+
+```elixir
+defmodule Day3 do
+  def run(input) do
+    input
+    |> String.trim()
+    |> String.split("\n")
+    |> Enum.map(fn line ->
+      {s1, s2} = String.split_at(line, div(String.length(line), 2))
+      part1 = MapSet.new(String.to_charlist(s1))
+      part2 = MapSet.new(String.to_charlist(s2))
+      MapSet.intersection(part1, part2)
+    end)
+    |> Enum.map(fn diff ->
+      diff
+      |> Enum.map(&priority(&1))
+      |> Enum.sum()
+    end)
+    |> Enum.sum()
+  end
+
+  def run2(input) do
+    input
+    |> String.trim()
+    |> String.split("\n")
+    |> Enum.map(&MapSet.new(String.to_charlist(&1)))
+    |> Enum.chunk_every(3)
+    |> Enum.map(fn [a, b, c] ->
+      MapSet.intersection(MapSet.intersection(a, b), c)
+      |> Enum.map(&priority(&1))
+      |> Enum.sum()
+    end)
+    |> Enum.sum()
+  end
+
+  defp priority(c) when c >= ?a and c <= ?z, do: c - ?a + 1
+  defp priority(c) when c >= ?A and c <= ?Z, do: c - ?A + 27
+end
+
+IO.inspect(Day3.run(sample_input))
+IO.inspect(Day3.run(input1))
+IO.inspect(Day3.run2(sample_input))
+IO.inspect(Day3.run2(input1))
+
+:ok
+```
