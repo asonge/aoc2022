@@ -1,0 +1,64 @@
+# Untitled notebook
+
+## Input
+
+```elixir
+sample_inputs = [
+  {"bvwbjplbgvbhsrlpgdmjqwftvncz", 5},
+  {"nppdvjthqldpwncqszvftbrmjlhg", 6},
+  {"nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg", 10},
+  {"zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw", 11}
+]
+
+sample_inputs2 = [
+  {"mjqjpqmgbljsphdztnvjfqwrcgsmlb", 19},
+  {"bvwbjplbgvbhsrlpgdmjqwftvncz", 23},
+  {"nppdvjthqldpwncqszvftbrmjlhg", 23},
+  {"nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg", 29},
+  {"zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw", 26}
+]
+
+{:ok, input1} = File.read(__DIR__ <> "/day6.txt")
+
+:ok
+```
+
+## Code
+
+```elixir
+defmodule Day6 do
+  def run(input, take) do
+    input
+    |> String.to_charlist()
+    |> run1(take, 0)
+  end
+
+  defp run1([], _take, n), do: n
+
+  defp run1(list, take, n) do
+    packet = Enum.take(list, take)
+    set = MapSet.new(packet)
+
+    case MapSet.size(set) === take do
+      true -> n + take
+      false -> run1(tl(list), take, n + 1)
+    end
+  end
+end
+
+sample_inputs
+|> Enum.each(fn {input, val} ->
+  IO.inspect({val, Day6.run(input, 4)})
+end)
+
+IO.inspect(Day6.run(input1, 4))
+
+sample_inputs2
+|> Enum.each(fn {input, val} ->
+  IO.inspect({val, Day6.run(input, 14)})
+end)
+
+IO.inspect(Day6.run(input1, 14))
+
+:ok
+```

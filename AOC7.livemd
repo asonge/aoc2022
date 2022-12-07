@@ -1,0 +1,111 @@
+# Day 7
+
+## Input
+
+```elixir
+sample_input =
+  """
+  $ cd /
+  $ ls
+  dir a
+  14848514 b.txt
+  8504156 c.dat
+  dir d
+  $ cd a
+  $ ls
+  dir e
+  29116 f
+  2557 g
+  62596 h.lst
+  $ cd e
+  $ ls
+  584 i
+  $ cd ..
+  $ cd ..
+  $ cd d
+  $ ls
+  4060174 j
+  8033020 d.log
+  5626152 d.ext
+  7214296 k
+  """
+  |> String.trim("\n")
+
+{:ok, input1} = File.read(__DIR__ <> "/day7.txt")
+:ok
+```
+
+## Code
+
+```elixir
+defmodule Day7 do
+  def run1(input) do
+    input
+    |> make_tree()
+    |> Map.values()
+    |> Enum.filter(&(&1 <= 100_000))
+    |> Enum.sum()
+  end
+
+  def run2(input) do
+    disk_size = 70_000_000
+    space_needed = 30_000_000
+
+    spacetree =
+      input
+      |> make_tree()
+
+    space_used = spacetree[[]]
+    space_to_free = space_needed - (disk_size - space_used)
+
+    spacetree
+    |> Map.values()
+    |> Enum.filter(&(&1 > space_to_free))
+    |> Enum.sort_by(&(&1 - space_to_free))
+    |> hd
+  end
+
+  defp make_tree(input) do
+    input
+    |> String.split("\n")
+    |> Enum.map(&String.split(&1, " "))
+    |> treeize([], %{})
+  end
+
+  defp treeize([], _, tree), do: tree
+
+  defp treeize([["$", "cd", "/"] | rest], _, tree) do
+    treeize(rest, [], Map.put(tree, [], 0))
+  end
+
+  defp treeize([["$", "ls"] | rest], cwd, tree), do: treeize(rest, cwd, tree)
+  defp treeize([["$", "cd", ".."] | rest], cwd, tree), do: treeize(rest, tl(cwd), tree)
+  defp treeize([["$", "cd", dir] | rest], cwd, tree), do: treeize(rest, [dir | cwd], tree)
+
+  defp treeize([["dir", dir] | rest], cwd, tree) do
+    nexttree = Map.put(tree, [dir | cwd], 0)
+    treeize(rest, cwd, nexttree)
+  end
+
+  defp treeize([[size, _file] | rest], cwd, tree) do
+    treeize(rest, cwd, bump_size(tree, cwd, String.to_integer(size)))
+  end
+
+  defp bump_size(tree, [], size) do
+    Map.update!(tree, [], &(&1 + size))
+  end
+
+  defp bump_size(tree, cwd, size) do
+    tree
+    |> Map.update!(cwd, &(&1 + size))
+    |> bump_size(tl(cwd), size)
+  end
+end
+
+IO.inspect(Day7.run1(sample_input))
+IO.inspect(Day7.run1(input1))
+
+IO.inspect(Day7.run2(sample_input))
+IO.inspect(Day7.run2(input1))
+:ok
+```
